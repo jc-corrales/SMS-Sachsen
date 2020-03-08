@@ -1,3 +1,6 @@
+library(markovchain)
+library(expm)
+
 lambda<- 1
 mu <- 2
 rho<- 3
@@ -11,41 +14,42 @@ matrizQ<-matrix(0,nrow=length(estados),ncol=length(estados))
 colnames(matrizQ)=estados
 rownames(matrizQ)=estados
 
-for (i in c(0,10,20,30,40,50,60,70,80,90,100))
+for (i in estadosCarga)
 {
-  for(j in c(0:1)
+  for(j in estadosBooleano)
   {
-    tempX = paste(i,",",j)
-    tempY = paste(i,",",j)
+    tempY = outer(j, i, paste, sep=",")
     if(i>0 & j == 0)
     {#Caso 1
-      tempX2 = paste(i-10,",",1)
-      tempY2 = paste(i-10,",",1)
-      matrizQ[tempX,tempY]=lambda
+      tempX =outer(0, i-10, paste, sep=",")
+      
+      matrizQ[tempY,tempX]=lambda
     }
-    if(i<i & j == 1)
+    if(i<100 & j == 1)
     {#Caso 2
-      tempX2 = paste(+10,",",1)
-      tempY2 = paste(i+10,",",1)
-      matrizQ[tempX,tempY]=mu
+      tempX = outer(1, i+10, paste, sep=",")
+      
+      matrizQ[tempY,tempX]=mu
     }
     if(j == 0)
     {#Caso 3
-      tempX2 = paste(i,",",1)
-      tempY2 = paste(i,",",1)
-      matrizQ[tempX,tempY]=mu
+      tempX = outer(1, i, paste, sep=",")
+      matrizQ[tempY,tempX]=rho
     }
-    if(i<1 & j == 1)
+    if(i>=70 & j == 1)
     {#Caso 4
-      tempX2 = paste(i,",",0)
-      tempY2 = paste(i,",",0)
-      matrizQ[tempX,tempY]=mu
-    }
-    else
-    {#Caso 6
-      mat2[i,j] = 0
+      tempX = outer(0, i, paste, sep=",")
+      matrizQ[tempY,tempX]=gamma
     }
   }
 }
 
-type(matrizQ)
+for (i in 1: length(estados)){
+  #Diagonal
+  matrizQ[i,i]=-sum(matrizQ[i, ])
+}
+
+CMTC <- new(Class="ctmc", states = as.character(estados), byrow = TRUE, generator = matrizQ)
+
+plot(CMTC, edge.arrow.size=0.5)
+
